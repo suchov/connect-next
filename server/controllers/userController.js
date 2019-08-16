@@ -38,7 +38,15 @@ exports.getUserProfile = (req, res) => {
   res.json(req.profile);
 };
 
-exports.getUserFeed = () => {};
+exports.getUserFeed = async (req, res) => {
+  const { following, _id } = req.profile;
+
+  following.push(_id);
+  const users = await User.find({ _id: { $nin: following } }).select(
+    "id name avatar"
+  );
+  res.json(users);
+};
 
 exports.uploadAvatar = () => {};
 
@@ -62,7 +70,7 @@ exports.addFollowing = async (req, res, next) => {
 
   await User.findOneAndUpdate(
     { _id: req.user._id },
-    { $push: { followiing: followId } }
+    { $push: { following: followId } }
   );
   next();
 };
@@ -83,7 +91,7 @@ exports.deleteFollowing = async (req, res, next) => {
 
   await User.findOneAndUpdate(
     { _id: req.user._id },
-    { $pull: { followiing: followId } }
+    { $pull: { following: followId } }
   );
   next();
 };
